@@ -42,7 +42,7 @@ class TweetPrinterV2(tweepy.StreamingClient):
         '''
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split())
         '''
-        stopwords = ["s","for", "on", "an", "a", "of", "and", "in", "the", "to", "from", "co", "t", "no", "yes"]
+        stopwords = ["s", "an", "a", "co", "t", "c", "l", "un", "y", "ma", "la", "d", "que", "por", "el"]
         temp = tweet.lower()
         temp = re.sub("'", "", temp) # to avoid removing contractions in english
         temp = re.sub("@[A-Za-z0-9_]+","", temp)
@@ -57,25 +57,6 @@ class TweetPrinterV2(tweepy.StreamingClient):
         return temp    
 
 
-    def get_tweet_sentiment(self, tweet):
-        '''
-        Utility function to classify sentiment of passed tweet
-        using textblob's sentiment method
-        '''
-        global cPositive, cNeutral, cNegative
-        # create TextBlob object of passed tweet text
-        analysis = TextBlob(self.clean_tweet(tweet))
-        # set sentiment
-        if analysis.sentiment.polarity > 0:
-            cPositive += 1
-            return 'positive'
-        elif analysis.sentiment.polarity == 0:
-            cNeutral += 1
-            return 'neutral'
-        else:
-            cNegative += 1
-            return 'negative'
-            
     def get_device(self, tweet):
         '''
         Utility function to classify sentiment of passed tweet
@@ -97,17 +78,13 @@ class TweetPrinterV2(tweepy.StreamingClient):
             cWeb += 1
         else:
             cOthers += 1
-            
 
-    def on_tweet(self, tweet):
-    
-    
+    def getAllinfo(self, tweet):
+
         global contador
 
         contador += 1
-        
-
-        sentiment =  self.get_tweet_sentiment(tweet.text) 
+    
         tweetClean = self.clean_tweet(tweet.text)
         test =  self.get_device(tweet.source)
 
@@ -120,34 +97,32 @@ class TweetPrinterV2(tweepy.StreamingClient):
         tweetsRT['lang'] =  tweet.lang
         #tweetsRT['public_metrics'] =  tweet.public_metrics
         #tweetsRT['created_at'] = tweet.created_at 
-        tweetsRT['author_id'] =  tweet.author_id
         tweetsRT['text'] =  tweet.text
         #tweetsRT['geo'] =  tweet.geo
-        tweetsRT['sentiment'] =  sentiment
         tweetsRT['hora'] =  str(tweet.created_at).split(' ')[1]
         tweetsRT['fecha'] = str(tweet.created_at).split(' ')[0]
         tweetsRT['totalTweets'] = contador
         tweetsRT['cleanTweet'] = tweetClean
-        tweetsRT['positive'] = round(((cPositive / contador) * 100), 2)
-        tweetsRT['neutral'] = round(((cNeutral / contador) * 100), 2)
-        tweetsRT['negative'] = round(((cNegative / contador) * 100), 2) 
         tweetsRT['Iphone'] = cIphone
         tweetsRT['Android'] = cAndroid    
-        tweetsRT['Web'] = cWeb   
-        tweetsRT['Others'] = cOthers  
-        tweetsRT['hashtag'] = hashtag 
+        tweetsRT['hashtagOne'] = hashtagOne 
+        tweetsRT['hashtagTwo'] = hashtagTwo 
         mycol.insert_one(tweetsRT)
 
-        print(f"{tweet} {tweet.country} ")
         #print(xd)cle 
-
         
-        #print(f'{tweetsRT} ')
+        print(f'{tweetsRT}')
 
         #print(f'Positives: {cPositive}, Neutral: {cNeutral}, Negative: {cNegative}')
         #print(f'Iphone: {cIphone}, Android: {cAndroid}, Web: {cWeb}, Others: {cOthers}')
         #print("TweetPrinterV2() ha sido llamado " + str(contador) + " veces") 
         print("-"*50)
+
+
+    def on_tweet(self, tweet):
+    
+        final = self.getAllinfo(tweet)
+    
         
     def on_connect(self):
         print('Connected..!')
@@ -174,10 +149,29 @@ else:
  
 # add new rules    
 #rule = StreamRule(value="adrianaTest")
-global hashtag 
-hashtag = 'Canelo'
+global hashtagOne 
+global hashtagTwo 
+hashtagOne = '#VamosArgentina'
+hashtagTwo = '#VamosMexico'
 # Value is the keyword, hashtag or something that we want to search
-rule = tweepy.StreamRule(value=f"{hashtag} -is:retweet lang:en has:geo")
+rule = tweepy.StreamRule(value=f"{hashtagOne} OR {hashtagTwo} -is:retweet lang:es")
 printer.add_rules(rule)
-#printer.filter(expansions=['geo.place_id', 'author_id',],tweet_fields=['created_at', 'geo', 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'], user_fields = ['name'] )
-printer.filter(tweet_fields=["geo","created_at","author_id", 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'],place_fields=["id","geo","name","country_code","place_type","full_name","country"],expansions=["geo.place_id", "author_id"])
+printer.filter(expansions=['geo.place_id', 'author_id',],tweet_fields=['created_at', 'geo', 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'], user_fields = ['name'] )
+#printer.filter(tweet_fields=["geo","created_at","author_id", 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'],place_fields=["id","geo","name","country_code","place_type","full_name","country"],expansions=["geo.place_id", "author_id"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

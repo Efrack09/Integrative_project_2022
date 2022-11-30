@@ -130,7 +130,7 @@ def hashtag():
             temp = [x for x in mycol.find().limit(1).sort([('_id',-1)])]
 
             json_data = json.dumps(
-                {'hashtag':temp[0]['hashtag']})
+                {'hashtagOne':temp[0]['hashtagOne'],'hashtagTwo':temp[0]['hashtagTwo'] })
             yield f"data:{json_data}\n\n"
             time.sleep(2)
 
@@ -139,13 +139,13 @@ def hashtag():
     response.headers["X-Accel-Buffering"] = "no"
     return response
 
-@application.route('/w_words')
-def send_wc():
-    def get_wordcloud():
+@application.route('/w_wordsA')
+def send_wcA():
+    def get_wordcloudA():
         while True:
-            key = [x for x in mycol.find().limit(1).sort([('_id',-1)])][0]['hashtag']
+            key = [x for x in mycol.find().limit(1).sort([('_id',-1)])][0]['hashtagOne']
 
-            df = pd.DataFrame([x for x in mycol.find({'hashtag':key})])
+            df = pd.DataFrame([x for x in mycol.find({'hashtagOne':key})])
             #wordcount = {}
             text1 = list(df['cleanTweet'])
 
@@ -165,7 +165,38 @@ def send_wc():
             yield f"data:{json_data}\n\n"
             time.sleep(3)
 
-    response = Response(stream_with_context(get_wordcloud()), mimetype="text/event-stream")
+    response = Response(stream_with_context(get_wordcloudA()), mimetype="text/event-stream")
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
+    return response
+
+@application.route('/w_wordsM')
+def send_wcM():
+    def get_wordcloudM():
+        while True:
+            key = [x for x in mycol.find().limit(1).sort([('_id',-1)])][0]['hashtagTwo']
+
+            df = pd.DataFrame([x for x in mycol.find({'hashtagTwo':key})])
+            #wordcount = {}
+            text1 = list(df['cleanTweet'])
+
+            text = ''
+            for i in text1:
+                text+= i
+                    #print(i)
+            path = r'C:\Users\EFRACK\Desktop\Integrative_project_2022\Twitter_dashboard\GothamRnd-Bold.otf'
+            pil_img = WordCloud(colormap = 'Greens', font_path=path, mode = "RGBA", background_color = None, max_words=1500).generate(text=text).to_image()
+            img = io.BytesIO()
+            pil_img.save(img, "PNG")
+            img.seek(0)
+            img_b64 = base64.b64encode(img.getvalue()).decode()
+
+            json_data = json.dumps(
+                {'img':img_b64})
+            yield f"data:{json_data}\n\n"
+            time.sleep(3)
+
+    response = Response(stream_with_context(get_wordcloudM()), mimetype="text/event-stream")
     response.headers["Cache-Control"] = "no-cache"
     response.headers["X-Accel-Buffering"] = "no"
     return response
