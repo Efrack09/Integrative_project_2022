@@ -3,6 +3,7 @@
 import json
 import random
 import time
+import numpy as np
 from datetime import datetime
 import pymongo
 import pandas as pd
@@ -45,25 +46,7 @@ def chart_data():
     return response
 
 
-@application.route('/bar-data')
-def bar_data():
-    def get_data_for_bar():
-        while True:
-            #mycol = mydb["twitterFinal"]
-            #temp = [x for x in mycol.find()][-1]
-            temp = [x for x in mycol.find().limit(1).sort([('_id',-1)])]
 
-            json_data = json.dumps(
-                {'positive': temp[0]['positive'] ,'neutral': temp[0]['neutral'],'negative': temp[0]['negative']})
-            yield f"data:{json_data}\n\n"
-            time.sleep(3)
-
-    response = Response(stream_with_context(get_data_for_bar()), mimetype="text/event-stream")
-    response.headers["Cache-Control"] = "no-cache"
-    response.headers["X-Accel-Buffering"] = "no"
-    return response
-
-    
 
     
 @application.route('/mobil-data')
@@ -200,7 +183,28 @@ def send_wcM():
     response.headers["Cache-Control"] = "no-cache"
     response.headers["X-Accel-Buffering"] = "no"
     return response
-    
+
+@application.route("/serve_csv",methods=['GET'])
+def serve_csv():
+    def totalTweet():
+        while True:
+            #mycol = mydb["twitterFinal"]
+            #temp = [x for x in mycol.find()][-1]
+            #temp = [x for x in mycol.find().limit(1).sort([('_id',-1)])]
+            df= pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv')
+            df['data'] = np.random.randint(500, size=len(df))
+ 
+            #json_data = json.dumps(
+            #    {'tweetsT':temp[0]['totalTweets']})
+            json_data = json.dumps(
+                {'CODE':list(df['CODE']),'GDP': list(df['data']),'COUNTRY':list(df['COUNTRY'])})
+            yield f"data:{json_data}\n\n"
+            time.sleep(5)
+ 
+    response = Response(stream_with_context(totalTweet()), mimetype="text/event-stream")
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
+    return response
     
 
 if __name__ == '__main__':
