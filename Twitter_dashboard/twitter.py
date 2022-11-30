@@ -75,6 +75,7 @@ class TweetPrinterV2(tweepy.StreamingClient):
         else:
             cNegative += 1
             return 'negative'
+            
     def get_device(self, tweet):
         '''
         Utility function to classify sentiment of passed tweet
