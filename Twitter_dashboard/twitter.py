@@ -1,5 +1,4 @@
 import tweepy
-from tweepy import StreamingClient, StreamRule
 import credentials
 import pymongo
 import re
@@ -29,12 +28,10 @@ cOthers = 0
 
 class TweetPrinterV2(tweepy.StreamingClient):
 
-
     def contar():
         global counterT
         counterT = counterT + 1
         print("contar() ha sido llamado " + str(counterT) + " veces")  
-
 
 
     def clean_tweet(self, tweet):
@@ -102,6 +99,8 @@ class TweetPrinterV2(tweepy.StreamingClient):
             
 
     def on_tweet(self, tweet):
+    
+    
         global contador
 
         contador += 1
@@ -137,17 +136,25 @@ class TweetPrinterV2(tweepy.StreamingClient):
         tweetsRT['Others'] = cOthers  
         tweetsRT['hashtag'] = hashtag 
         mycol.insert_one(tweetsRT)
-        #print(f"{tweet.created_at} ")
+
+        print(f"{tweet} {tweet.country} ")
         #print(xd)cle 
 
-        print(f'{tweetsRT} ')
+        
+        #print(f'{tweetsRT} ')
 
         #print(f'Positives: {cPositive}, Neutral: {cNeutral}, Negative: {cNegative}')
         #print(f'Iphone: {cIphone}, Android: {cAndroid}, Web: {cWeb}, Others: {cOthers}')
         #print("TweetPrinterV2() ha sido llamado " + str(contador) + " veces") 
         print("-"*50)
         
-        
+    def on_connect(self):
+        print('Connected..!')
+
+    def on_error(self, status):
+        print(status)
+        return True
+    
 
 printer = TweetPrinterV2(bearer_token)
  
@@ -167,10 +174,9 @@ else:
 # add new rules    
 #rule = StreamRule(value="adrianaTest")
 global hashtag 
-hashtag = 'Rihanna'
+hashtag = 'Canelo'
 # Value is the keyword, hashtag or something that we want to search
-rule = StreamRule(value=f"{hashtag} -is:retweet lang:en")
+rule = tweepy.StreamRule(value=f"{hashtag} -is:retweet lang:en has:geo")
 printer.add_rules(rule)
-
-
-printer.filter(expansions=['geo.place_id', 'author_id',],tweet_fields=['created_at', 'geo', 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'], user_fields = ['name'] )
+#printer.filter(expansions=['geo.place_id', 'author_id',],tweet_fields=['created_at', 'geo', 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'], user_fields = ['name'] )
+printer.filter(tweet_fields=["geo","created_at","author_id", 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'],place_fields=["id","geo","name","country_code","place_type","full_name","country"],expansions=["geo.place_id", "author_id"])

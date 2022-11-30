@@ -168,7 +168,7 @@
                 backgroundColor: '#56c54e',
                 borderColor: "#56c54e",
                 fill: false
-            }],
+            }]
             },
             options: {
                 responsive: true,
@@ -210,18 +210,24 @@
         const source = new EventSource("/chart-data");
 
         source.onmessage = function (event) {
-            const datas = JSON.parse(event.data);
-            const datas2 = JSON.parse(event.data);
+            const data = JSON.parse(event.data);
+            const data2 = JSON.parse(event.data);
+;
 
-            console.log(datas)
-            console.log(datas2)
+
             if (config.data.labels.length === 20) {
                 config.data.labels.shift();
                 config.data.datasets[0].data.shift();
             }
+            if (config.data.labels.length === 20) {
+                config.data.labels.shift();
+                config.data.datasets[1].data.shift();
+            }
 
-            config.data.labels.push(datas.time);
-            config.data.datasets[0].data.push(datas.value);
+
+            config.data.labels.push(data.time);
+            config.data.datasets[0].data.push(data.value);
+            config.data.datasets[1].data.push(data2.value);
             lineChart.update();
         }
     });
