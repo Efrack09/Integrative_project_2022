@@ -199,7 +199,7 @@ def serve_csv():
             json_data = json.dumps(
                 {'CODE':list(df['CODE']),'GDP': list(df['data']),'COUNTRY':list(df['COUNTRY'])})
             yield f"data:{json_data}\n\n"
-            time.sleep(5)
+            time.sleep(15)
  
     response = Response(stream_with_context(totalTweet()), mimetype="text/event-stream")
     response.headers["Cache-Control"] = "no-cache"

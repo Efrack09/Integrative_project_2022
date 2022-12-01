@@ -42,7 +42,8 @@ class TweetPrinterV2(tweepy.StreamingClient):
         '''
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split())
         '''
-        stopwords = ["s", "an", "a", "co", "t", "c", "l", "un", "y", "ma", "la", "d", "que", "por", "el"]
+        stopwords = ["s", "an", "a", "co", "t", "c", "l", "un", "y", "ma", "la", "d", "que", "por", "el", "n", "lo", "para", "n", "Tco ", "Vwtpsx", "Agv", 
+        "Bd"]
         temp = tweet.lower()
         temp = re.sub("'", "", temp) # to avoid removing contractions in english
         temp = re.sub("@[A-Za-z0-9_]+","", temp)
@@ -154,7 +155,7 @@ global hashtagTwo
 hashtagOne = '#VamosArgentina'
 hashtagTwo = '#VamosMexico'
 # Value is the keyword, hashtag or something that we want to search
-rule = tweepy.StreamRule(value=f"{hashtagOne} OR {hashtagTwo} -is:retweet lang:es")
+rule = tweepy.StreamRule(value=f"{hashtagOne} OR {hashtagTwo} lang:en")
 printer.add_rules(rule)
 printer.filter(expansions=['geo.place_id', 'author_id',],tweet_fields=['created_at', 'geo', 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'], user_fields = ['name'] )
 #printer.filter(tweet_fields=["geo","created_at","author_id", 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'],place_fields=["id","geo","name","country_code","place_type","full_name","country"],expansions=["geo.place_id", "author_id"])
