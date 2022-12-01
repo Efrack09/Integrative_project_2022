@@ -1,5 +1,4 @@
-#ion. generate_random_data() yield values from 0 to 100 and the current timestamp.
-
+#ion. generate_random_data() yield values from 0 to 100 and the current timestamp
 import json
 import random
 import time

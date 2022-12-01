@@ -3,6 +3,7 @@ import credentials
 import pymongo
 import re
 from textblob import TextBlob
+import classificador
 
 
 bearer_token = credentials.BEARER_TOKEN
@@ -27,6 +28,10 @@ cOthers = 0
 
 
 class TweetPrinterV2(tweepy.StreamingClient):
+
+    def classTweet(self, tweet):
+        classi = classificador.predict_new(tweet.text)
+        print(classi)
 
     def contar():
         global counterT
@@ -56,7 +61,7 @@ class TweetPrinterV2(tweepy.StreamingClient):
         temp = [w for w in temp if not w in stopwords]
         temp = " ".join(word for word in temp)
         return temp    
-
+    
 
     def get_device(self, tweet):
         '''
@@ -112,7 +117,7 @@ class TweetPrinterV2(tweepy.StreamingClient):
 
         #print(xd)cle 
         
-        print(f'{tweetsRT}')
+        #print(f'{tweetsRT}')
 
         #print(f'Positives: {cPositive}, Neutral: {cNeutral}, Negative: {cNegative}')
         #print(f'Iphone: {cIphone}, Android: {cAndroid}, Web: {cWeb}, Others: {cOthers}')
