@@ -1,18 +1,21 @@
+from tweepy import StreamingClient
 import tweepy
 import credentials
 import pymongo
 import re
-from textblob import TextBlob
-import classificador
+from classificador import robot_class_predictor
+
 
 
 bearer_token = credentials.BEARER_TOKEN
 #connecting with the database sample_airbnb
 
 myclient = pymongo.MongoClient("mongodb+srv://ja378339:socrates314@cluster0.8srrj.mongodb.net/?retryWrites=true&w=majority")
-mydb = myclient["bigdata"]
+mydb1 = myclient["bigdata"]
+mydb2 = myclient["bigdata"]
 #getting the collection
-mycol = mydb["juevesFinal"]
+mycol1 = mydb1["ARGINT"]
+mycol2 = mydb2["MXNINT"]
 
 
 
@@ -27,11 +30,19 @@ cWeb = 0
 cOthers = 0
 
 
-class TweetPrinterV2(tweepy.StreamingClient):
 
-    def classTweet(self, tweet):
-        classi = classificador.predict_new(tweet.text)
-        print(classi)
+class TweetPrinterV2(StreamingClient):
+
+
+    def __init__(self):
+        
+
+        super().__init__(bearer_token)
+        self.classF = robot_class_predictor()
+    
+    def finalW(self):
+
+        self.classF.prepare_metadata()
 
     def contar():
         global counterT
@@ -90,40 +101,67 @@ class TweetPrinterV2(tweepy.StreamingClient):
         global contador
 
         contador += 1
-    
+
+
+        
         tweetClean = self.clean_tweet(tweet.text)
+        self.finalW()
+
+        etiqueta = int(self.classF.predict_new(tweetClean))
+
         test =  self.get_device(tweet.source)
 
+        if etiqueta == 0:
 
-        tweetsRT = {}
+            tweetsRTM = {}
 
-        tweetsRT['id'] =  tweet.id
-        #tweetsRT['entities'] =  tweet.entities
-        tweetsRT['source'] =  tweet.source
-        tweetsRT['lang'] =  tweet.lang
-        #tweetsRT['public_metrics'] =  tweet.public_metrics
-        #tweetsRT['created_at'] = tweet.created_at 
-        tweetsRT['text'] =  tweet.text
-        #tweetsRT['geo'] =  tweet.geo
-        tweetsRT['hora'] =  str(tweet.created_at).split(' ')[1]
-        tweetsRT['fecha'] = str(tweet.created_at).split(' ')[0]
-        tweetsRT['totalTweets'] = contador
-        tweetsRT['cleanTweet'] = tweetClean
-        tweetsRT['Iphone'] = cIphone
-        tweetsRT['Android'] = cAndroid    
-        tweetsRT['hashtagOne'] = hashtagOne 
-        tweetsRT['hashtagTwo'] = hashtagTwo 
-        mycol.insert_one(tweetsRT)
+            tweetsRTM['id'] =  tweet.id
+            #tweetsRT['entities'] =  tweet.entities
+            tweetsRTM['source'] =  tweet.source
+            tweetsRTM['lang'] =  tweet.lang
+            #tweetsRT['public_metrics'] =  tweet.public_metrics
+            #tweetsRT['created_at'] = tweet.created_at 
+            tweetsRTM['text'] =  tweet.text
+            #tweetsRT['geo'] =  tweet.geo
+            tweetsRTM['hora'] =  str(tweet.created_at).split(' ')[1]
+            tweetsRTM['fecha'] = str(tweet.created_at).split(' ')[0]
+            tweetsRTM['totalTweets'] = contador
+            tweetsRTM['cleanTweet'] = tweetClean
+            tweetsRTM['Iphone'] = cIphone
+            tweetsRTM['Android'] = cAndroid     
+            tweetsRTM['hashtagTwo'] = hashtagTwo 
+            tweetsRTM['etiqueta'] = etiqueta 
+            mycol2.insert_one(tweetsRTM)
 
-        #print(xd)cle 
-        
-        #print(f'{tweetsRT}')
+            print(etiqueta)
+            print(tweetsRTM)
+            print("-"*50)
 
-        #print(f'Positives: {cPositive}, Neutral: {cNeutral}, Negative: {cNegative}')
-        #print(f'Iphone: {cIphone}, Android: {cAndroid}, Web: {cWeb}, Others: {cOthers}')
-        #print("TweetPrinterV2() ha sido llamado " + str(contador) + " veces") 
-        print("-"*50)
+        if etiqueta == 1:
 
+            tweetsRTA = {}
+
+            tweetsRTA['id'] =  tweet.id
+            #tweetsRT['entities'] =  tweet.entities
+            tweetsRTA['source'] =  tweet.source
+            tweetsRTA['lang'] =  tweet.lang
+            #tweetsRT['public_metrics'] =  tweet.public_metrics
+            #tweetsRT['created_at'] = tweet.created_at 
+            tweetsRTA['text'] =  tweet.text
+            #tweetsRT['geo'] =  tweet.geo
+            tweetsRTA['hora'] =  str(tweet.created_at).split(' ')[1]
+            tweetsRTA['fecha'] = str(tweet.created_at).split(' ')[0]
+            tweetsRTA['totalTweets'] = contador
+            tweetsRTA['cleanTweet'] = tweetClean
+            tweetsRTA['Iphone'] = cIphone
+            tweetsRTA['Android'] = cAndroid    
+            tweetsRTA['hashtagOne'] = hashtagOne 
+            tweetsRTA['etiqueta'] = etiqueta 
+            mycol1.insert_one(tweetsRTA)
+            
+            print(etiqueta)
+            print(tweetsRTA)
+            print("-"*50)
 
     def on_tweet(self, tweet):
     
@@ -138,8 +176,8 @@ class TweetPrinterV2(tweepy.StreamingClient):
         return True
     
 
-printer = TweetPrinterV2(bearer_token)
- 
+printer = TweetPrinterV2()
+
 # clean-up pre-existing rules
 rule_ids = []
 result = printer.get_rules()
@@ -149,7 +187,7 @@ for rule in result.data:
  
 if(len(rule_ids) > 0):
     printer.delete_rules(rule_ids)
-    printer = TweetPrinterV2(bearer_token)
+    printer = TweetPrinterV2()
 else:
     print("No rules to delete")
  
@@ -160,7 +198,7 @@ global hashtagTwo
 hashtagOne = '#VamosArgentina'
 hashtagTwo = '#VamosMexico'
 # Value is the keyword, hashtag or something that we want to search
-rule = tweepy.StreamRule(value=f"{hashtagOne} OR {hashtagTwo} lang:en")
+rule = tweepy.StreamRule(value=f"{hashtagOne} OR {hashtagTwo} ")
 printer.add_rules(rule)
 printer.filter(expansions=['geo.place_id', 'author_id',],tweet_fields=['created_at', 'geo', 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'], user_fields = ['name'] )
 #printer.filter(tweet_fields=["geo","created_at","author_id", 'entities', 'public_metrics', 'organic_metrics', 'source', 'lang'],place_fields=["id","geo","name","country_code","place_type","full_name","country"],expansions=["geo.place_id", "author_id"])

@@ -1,5 +1,4 @@
 import pandas as pd
-import seaborn as sns
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
@@ -74,7 +73,7 @@ class robot_class_predictor:
         
     #The methods avaialabe to Load the information  
     def load_dataset_class_1(self):
-        df_mexico = pd.read_csv('../NLP_notebooks/classificator/clean_data_c_1.csv')
+        df_mexico = pd.read_csv('../NLP_notebooks/classificator/allM.csv')
         lnguage = 'en'
         df_mexico_1 = df_mexico.loc[df_mexico['lang']==lnguage]        
         t_1=pd.DataFrame({'tweet':list(df_mexico_1['text']),'class':0})
@@ -82,10 +81,10 @@ class robot_class_predictor:
         self.cleanFrame(t_1)
         self.df_class_1 = t_1
 
-        print('Data loaded successfully')
+
 
     def load_dataset_class_2(self):
-        df_argentina = pd.read_csv('../NLP_notebooks/classificator/clean_data_c_2.csv')
+        df_argentina = pd.read_csv('../NLP_notebooks/classificator/allA.csv')
         lnguage = 'en'
         df_argentina_1 = df_argentina.loc[df_argentina['lang']==lnguage]        
         t_1=pd.DataFrame({'tweet':list(df_argentina_1['text']),'class':1})
@@ -94,7 +93,7 @@ class robot_class_predictor:
         self.df_class_2 = t_1
 
 
-        print('Data loaded successfully')
+
         
         
     #=====================================================#
@@ -145,12 +144,6 @@ class robot_class_predictor:
 
 
         val = model.predict(X).round()
-        print(val)
 
-        return val
 
-wall_e = robot_class_predictor()
-#wall_e.prepare_metadata()
-test =  'Lamediocre #SeleccionMexicana to the #Brazil National Team already in the round of 16. https://t.co/rhisRaKL2h'
-ect = wall_e.predict_new(test)
-ect[0]
+        return val[0]
